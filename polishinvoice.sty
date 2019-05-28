@@ -1,0 +1,203 @@
+% Package for creating invoices.
+% Implemented by Łukasz Buśko (busko.lukasz@pm.me).
+% (c) 2019 Łukasz Buśko
+% Version 2019-05-25.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{polishinvoice}[2019/05/25 package polishinvoice]
+
+% Fall back to english if option parsing fails
+\def \INV@lang {eng}
+
+% Language options
+\DeclareOption{american}{\def \INV@lang  {eng}}
+\DeclareOption{english}{\def \INV@lang   {eng}}
+\DeclareOption{UKenglish}{\def \INV@lang {eng}}
+\DeclareOption{USenglish}{\def \INV@lang {eng}}
+\DeclareOption{polish}{\def \INV@lang {pl}}
+
+\ProcessOptions
+
+% Translations
+\def \INV@text@invoice@eng {Invoice}
+\def \INV@text@ourref@eng {Our ref}
+\def \INV@text@yourref@eng {Your ref}
+\def \INV@text@invnum@eng {Invoice number}
+\def \INV@text@invdate@eng {Invoice date}
+\def \INV@text@deadline@eng {Deadline}
+\def \INV@text@description@eng {Description}
+\def \INV@text@itemprice@eng {Item price}
+\def \INV@text@vat@eng {VAT}
+\def \INV@text@itemtotal@eng {Sum}
+\def \INV@text@subtotal@eng {Subtotal}
+\def \INV@text@total@eng {Total}
+\def \INV@text@paymentinfo@eng {Payment info}
+\def \INV@text@totallong@eng {Total}
+\def \INV@text@accountnum@eng {Account number}
+\def \INV@text@warning@eng {By paying after deadline, additional interest and fees may apply.}
+\def \INV@text@companyid@eng {Company id}
+\def \INV@text@date@eng {Date}
+\def \INV@text@signature@eng {Signature}
+\def \INV@text@noitems@eng {No items yet}
+\def \INV@text@addr@eng {Address line 1 \\ Address line 2}
+\def \INV@text@company@eng {Company}
+
+\def \INV@text@invoice@pl {Faktura}
+\def \INV@text@ourref@pl {Dane wystawcy}
+\def \INV@text@yourref@pl {Dane klienta}
+\def \INV@text@invnum@pl {Numer faktury}
+\def \INV@text@invdate@pl {Data faktury}
+\def \INV@text@deadline@pl {Płatne do}
+\def \INV@text@description@pl {Opis}
+\def \INV@text@itemprice@pl {Cena usługi}
+\def \INV@text@vat@pl {VAT}
+\def \INV@text@itemtotal@pl {Suma}
+\def \INV@text@subtotal@pl {Kwota netto}
+\def \INV@text@total@pl {Kwota brutto}
+\def \INV@text@paymentinfo@pl {Informacje płatności}
+\def \INV@text@totallong@pl {Do zapłaty}
+\def \INV@text@accountnum@pl {Numer rachunku}
+\def \INV@text@warning@pl {Wypadku przekroczenia terminu płatnośćt mogą zostać naliczone odsetki ustawowe zgodnie z art 481\oint k.c.}
+\def \INV@text@companyid@pl {NIP}
+\def \INV@text@date@pl {Data}
+\def \INV@text@signature@pl {Podpis}
+\def \INV@text@noitems@pl {Dodaj pozycję}
+\def \INV@text@addr@pl {Linia pierwsza adresu \\ Linia druga adresu}
+\def \INV@text@company@pl {Kontrahent}
+
+% Import neccesary libraries
+\RequirePackage{advdate}
+\RequirePackage{hyperref}
+\RequirePackage{url}
+\RequirePackage{tabularx}
+\RequirePackage{etoolbox}
+\RequirePackage{xcolor}
+\RequirePackage{colortbl}
+\RequirePackage{babel}
+\RequirePackage{polski}
+%later on
+\RequirePackage{ifthen}
+
+% Define colors
+\definecolor{linecolor}{HTML}{b2b2b2}
+
+% Miscellanous styling
+\setlength{\tabcolsep}{0em}
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{0pt}
+
+% Links
+\RequirePackage{hyperref}
+\RequirePackage{url}
+
+% Table
+\RequirePackage{tabularx}
+
+% Commands
+\RequirePackage{etoolbox}
+
+% Line seperator
+\newcommand{\linesep}{\vspace{6pt} {\color{linecolor}\hrule} \vspace{6pt}}
+
+% Standard values
+\def \INV@content@num {{\color{red} \csname INV@text@num@\INV@lang\endcsname }}
+\def \INV@content@title {\csname INV@text@invoice@\INV@lang\endcsname}
+\def \INV@content@date {\today}
+\def \INV@content@deadline {\DayAfter[14]}
+\def \INV@content@name {{\color{red} \csname INV@text@ourref@\INV@lang\endcsname}}
+\def \INV@content@addr {{\color{red} \csname INV@text@addr@\INV@lang\endcsname}}
+\def \INV@content@toname {{\color{red} \csname INV@text@company@\INV@lang\endcsname}}
+\def \INV@content@toaddr {{\color{red} \csname INV@text@addr@\INV@lang\endcsname}}
+\def \INV@content@subtotal {{\color{red} \csname INV@text@subtotal@\INV@lang\endcsname}}
+\def \INV@content@vat {{\color{red} \csname INV@text@vat@\INV@lang\endcsname}}
+\def \INV@content@total {{\color{red} \csname INV@text@total@\INV@lang\endcsname}}
+\def \INV@content@accountnum {{\color{red} \csname INV@text@accountnum@\INV@lang\endcsname}}
+\def \INV@content@companyid {{\color{red} \csname INV@text@companyid@\INV@lang\endcsname}}
+
+% Functions for overriding standard values
+\newcommand{\setinvoicetitle}[1]{\def \INV@content@title {#1}}
+\newcommand{\setinvoicenumber}[1]{\def \INV@content@num {#1}}
+\newcommand{\setreceivername}[1]{\def \INV@content@toname {#1}}
+\newcommand{\setreceiveraddress}[1]{\def \INV@content@toaddr {#1}}
+\newcommand{\setname}[1]{\def \INV@content@name {#1}}
+\newcommand{\setaddress}[1]{\def \INV@content@addr {#1}}
+\newcommand{\setphonenumber}[1]{\def \INV@content@phonenum {#1}}
+\newcommand{\setemail}[1]{\def \INV@content@email {\href{mailto:#1}{#1}}}
+\newcommand{\setyourref}[1]{\def \INV@content@yourref {#1}}
+\newcommand{\setourref}[1]{\def \INV@content@ourref {#1}}
+\newcommand{\setinvoicedate}[1]{\def \INV@content@date {#1}}
+\newcommand{\setdeadline}[1]{\def \INV@content@deadline {\DayAfter[#1]}}
+\newcommand{\additem}[4]{\ifdef{\INV@content@list}{\appto \INV@content@list {\\ #1 & #2 & #3 \% & #4}}{\def \INV@content@list {#1 & #2 & #3 \% & #4}}}
+\newcommand{\setsubtotal}[1]{\def \INV@content@subtotal {#1}}
+\newcommand{\setvat}[1]{\def \INV@content@vat {#1}}
+\newcommand{\settotal}[1]{\def \INV@content@total {#1}}
+\newcommand{\setaccountnumber}[1]{\def \INV@content@accountnum {#1}}
+\newcommand{\setcompanyid}[1]{\def \INV@content@companyid {#1}}
+\newcommand{\setreceivercompanyid}[1]{\def \INV@content@tocompanyid {#1}}
+\newcommand{\doubleSignature}{
+\vspace{2cm}
+
+\begin{center}
+	\csname INV@text@date@\INV@lang\endcsname: \INV@content@date
+\end{center}
+
+\noindent
+\begin{tabular}{lcl}
+	\rule{5cm}{1pt} & \hspace{2cm} & \rule{5cm}{1pt}\\
+	\ifdef{\INV@content@ourref}{\INV@content@ourref}{} & & \csname INV@text@signature@\INV@lang\endcsname \ifdef{\INV@content@yourref}{\INV@content@yourref}{}
+\end{tabular}
+\vspace{1cm}
+}
+
+% Make invoice function
+\def \makeinvoice {
+	\begin{minipage}[b]{0.5\textwidth}
+		{\large \textbf{\INV@content@toname}} \\
+		\INV@content@toaddr
+		\ifdef{\INV@content@tocompanyid}{\\ \csname INV@text@companyid@\INV@lang\endcsname: \INV@content@tocompanyid}{}
+	\end{minipage}
+	\begin{minipage}[b]{0.5\textwidth}
+		\hfill {\Huge \INV@content@title}
+		
+		\linesep
+		
+		{\large \textbf{\INV@content@name}} \\
+		\INV@content@addr
+		\\ \csname INV@text@companyid@\INV@lang\endcsname: \INV@content@companyid
+		\\ \csname INV@text@accountnum@\INV@lang\endcsname: \INV@content@accountnum
+		\ifdef{\INV@content@phonenum}{\\ \INV@content@phonenum}{}
+		\ifdef{\INV@content@email}{\\ \INV@content@email}{}
+		
+		\linesep
+		
+		{ \footnotesize
+			\ifdef{\INV@content@ourref}{\csname INV@text@ourref@\INV@lang\endcsname: \INV@content@ourref \\}{}
+			\ifdef{\INV@content@yourref}{\csname INV@text@yourref@\INV@lang\endcsname: \INV@content@yourref \\}{}
+			\csname INV@text@invnum@\INV@lang\endcsname: \INV@content@num \\
+			\csname INV@text@invdate@\INV@lang\endcsname: \INV@content@date \\
+			\csname INV@text@deadline@\INV@lang\endcsname: \INV@content@deadline
+		}
+	\end{minipage}
+	
+	\vspace{3cm}
+	
+	\renewcommand{\arraystretch}{1.5}
+	\begin{tabularx}{\textwidth}{X c c r}
+		\textbf{\csname INV@text@description@\INV@lang\endcsname} & \textbf{\csname INV@text@itemprice@\INV@lang\endcsname} & \hspace{10pt}\textbf{\csname INV@text@vat@\INV@lang\endcsname}\hspace{10pt} & \textbf{\csname INV@text@itemtotal@\INV@lang\endcsname} \\ \arrayrulecolor{linecolor}\hline
+		\ifdef{\INV@content@list}{\INV@content@list}{{\color{red} \csname INV@text@noitems@\INV@lang\endcsname} & & &}
+	\end{tabularx}
+	
+	\vspace{2cm}
+	\hfill
+	\renewcommand{\arraystretch}{1}
+	\begin{tabular}{r r}
+		\csname INV@text@subtotal@\INV@lang\endcsname: \hspace{10pt} & \INV@content@subtotal \\
+		\csname INV@text@vat@\INV@lang\endcsname: \hspace{10pt} & \INV@content@vat \\ 
+		{\Large \csname INV@text@total@\INV@lang\endcsname: \hspace{10pt}} & {\Large \INV@content@total}
+	\end{tabular}
+	\vfill
+	\doubleSignature{}
+%	test if-a
+%	\ifthenelse{\equal{\INV@lang}{pl}}{tak plx}{ nieplx}
+}
+

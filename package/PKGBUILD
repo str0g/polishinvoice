@@ -1,0 +1,25 @@
+# Maintainer: Łukasz Buśko <busko.lukasz@pm.me>
+
+pkgname=polishinvoice
+pkgver=1.0
+pkgrel=0
+arch=('any')
+
+depends=('texlive-langextra>=2018.49428-1'
+	'texlive-formatsextra>=2018.48634-1'
+)
+
+
+source=("http://github.com/str0g/polishinvoice.git")
+
+pkgdesc="Polish invoice template for LaTex"
+license=('GPL3')
+
+#install=('polishinvoice.sty')
+
+
+
+package() {
+	install -dm755 "$pkgdir/usr/share/texmf-dist/tex/polishinvoice"
+	install -Dm644  "$srcdir/polishinvoice/polishinvoice.sty" "$pkgdir/usr/share/texmf-dist/tex/polishinvoice/"
+}
