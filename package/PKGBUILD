@@ -5,18 +5,18 @@ pkgver=1.0
 pkgrel=0
 arch=('any')
 
-depends=('texlive-langextra>=2018.49428-1'
+depends=('texlive-core'
+	'texlive-langextra>=2018.49428-1'
 	'texlive-formatsextra>=2018.48634-1'
 )
+makedepends=('git')
 
 
-source=("http://github.com/str0g/polishinvoice.git")
+source=("git+https://github.com/str0g/polishinvoice.git")
+sha256sums=('SKIP')
 
 pkgdesc="Polish invoice template for LaTex"
 license=('GPL3')
-
-#install=('polishinvoice.sty')
-
 
 
 package() {
