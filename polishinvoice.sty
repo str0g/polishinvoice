@@ -101,6 +101,7 @@
 \def \INV@content@num {{\color{red} \csname INV@text@num@\INV@lang\endcsname }}
 \def \INV@content@title {\csname INV@text@invoice@\INV@lang\endcsname}
 \def \INV@content@date {\today}
+\def \INV@content@dateofissue {\INV@content@date}
 \def \INV@content@deadline {\DayAfter[14]}
 \def \INV@content@name {{\color{red} \csname INV@text@ourref@\INV@lang\endcsname}}
 \def \INV@content@addr {{\color{red} \csname INV@text@addr@\INV@lang\endcsname}}
@@ -132,11 +133,12 @@
 \newcommand{\setaccountnumber}[1]{\def \INV@content@accountnum {#1}}
 \newcommand{\setcompanyid}[1]{\def \INV@content@companyid {#1}}
 \newcommand{\setreceivercompanyid}[1]{\def \INV@content@tocompanyid {#1}}
+\newcommand{\overridedateofissue}[1]{\def \INV@content@dateofissue {#1}}
 \newcommand{\doubleSignature}{
 \vspace{2cm}
 
 \begin{center}
-	\csname INV@text@date@\INV@lang\endcsname: \INV@content@date
+	\csname INV@text@date@\INV@lang\endcsname: \INV@content@dateofissue
 \end{center}
 
 \noindent

@@ -17,4 +17,5 @@
 \setaccountnumber{number}
 \setcompanyid{NIP}
 \setreceivercompanyid{Client NIP}
+\overridedateofissue{Date of issue}
 \makeinvoice
