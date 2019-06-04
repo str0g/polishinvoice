@@ -36,6 +36,7 @@
 \def \INV@text@accountnum@eng {Account number}
 \def \INV@text@warning@eng {By paying after deadline, additional interest and fees may apply.}
 \def \INV@text@companyid@eng {Company id}
+\def \INV@text@regon@eng {REGON}
 \def \INV@text@date@eng {Date}
 \def \INV@text@signature@eng {Signature}
 \def \INV@text@noitems@eng {No items yet}
@@ -59,6 +60,7 @@
 \def \INV@text@accountnum@pl {Numer rachunku}
 \def \INV@text@warning@pl {Wypadku przekroczenia terminu płatnośćt mogą zostać naliczone odsetki ustawowe zgodnie z art 481\oint k.c.}
 \def \INV@text@companyid@pl {NIP}
+\def \INV@text@regon@pl {REGON}
 \def \INV@text@date@pl {Data}
 \def \INV@text@signature@pl {Podpis}
 \def \INV@text@noitems@pl {Dodaj pozycję}
@@ -132,6 +134,7 @@
 \newcommand{\settotal}[1]{\def \INV@content@total {#1}}
 \newcommand{\setaccountnumber}[1]{\def \INV@content@accountnum {#1}}
 \newcommand{\setcompanyid}[1]{\def \INV@content@companyid {#1}}
+\newcommand{\setreceiverregon}[1]{\def \INV@content@toregon {#1}}
 \newcommand{\setreceivercompanyid}[1]{\def \INV@content@tocompanyid {#1}}
 \newcommand{\overridedateofissue}[1]{\def \INV@content@dateofissue {#1}}
 \newcommand{\doubleSignature}{
@@ -155,6 +158,7 @@
 		{\large \textbf{\INV@content@toname}} \\
 		\INV@content@toaddr
 		\ifdef{\INV@content@tocompanyid}{\\ \csname INV@text@companyid@\INV@lang\endcsname: \INV@content@tocompanyid}{}
+		\ifdef{\INV@content@toregon}{\\ \csname INV@text@regon@\INV@lang\endcsname: \INV@content@toregon}{}
 	\end{minipage}
 	\begin{minipage}[b]{0.5\textwidth}
 		\hfill {\Huge \INV@content@title}
