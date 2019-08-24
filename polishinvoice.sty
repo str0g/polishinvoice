@@ -128,6 +128,7 @@
 \newcommand{\setourref}[1]{\def \INV@content@ourref {#1}}
 \newcommand{\setinvoicedate}[1]{\def \INV@content@date {#1}}
 \newcommand{\setdeadline}[1]{\def \INV@content@deadline {\DayAfter[#1]}}
+\newcommand{\forcedeadline}[1]{\def \INV@content@deadline {#1}}
 \newcommand{\additem}[4]{\ifdef{\INV@content@list}{\appto \INV@content@list {\\ #1 & #2 & #3 \% & #4}}{\def \INV@content@list {#1 & #2 & #3 \% & #4}}}
 \newcommand{\setsubtotal}[1]{\def \INV@content@subtotal {#1}}
 \newcommand{\setvat}[1]{\def \INV@content@vat {#1}}

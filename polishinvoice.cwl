@@ -10,6 +10,7 @@
 \setourref{name}
 \setinvoicedate{date}
 \setdeadline{days from now}
+\forcedeadline{input date in format <day as number> <month name> <year as number>}
 \additem{description}{price excluding vat}{vat percentage}{price including vat}
 \setsubtotal{total excluding vat}
 \setvat{total vat}
