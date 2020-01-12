@@ -1,0 +1,39 @@
+\documentclass[polish]{article}
+
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+\usepackage{fullpage}
+\usepackage[polish]{polishinvoice}
+\usepackage{bookmark}
+
+\pagestyle{empty}
+\setinvoicetitle{Faktura}
+
+\setname{Firma Imię Nazwisko}
+\setourref{Imię Nazwisko}
+\setaddress{Adres lokalu \\ kod pocztowy Miasto}
+\setcompanyid{1234567890}
+\setphonenumber{+48012234567}
+\setemail{email@email.com}
+\setaccountnumber{01 0000 2000 3000 4000 5000 6000}
+\setdeadline{14}
+\setinvoicenumber{1/201905}
+
+\setreceivername{Kontrahent}
+%\setyourref{}
+\setreceiveraddress{Adres lokalu \\ kod pocztowy Miasto}
+\setreceivercompanyid{9876543210}
+\setreceivercorrespondenceenable
+\setreceivercorrespondencename{Kontrahent 1}
+\setreceivercorrespondenceaddr{Adres 2 \\ kod pocztowy 2 Nowe Miasto}
+
+\additem{Wykop}{10000 PLN}{23}{12300 PLN}
+\setsubtotal{12300 PLN}
+\setvat{2300 PLN}
+\settotal{12300 PLN}
+
+\begin{document}
+
+\makeinvoice
+
+\end{document}

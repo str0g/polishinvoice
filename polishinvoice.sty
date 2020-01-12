@@ -42,6 +42,9 @@
 \def \INV@text@noitems@eng {No items yet}
 \def \INV@text@addr@eng {Address line 1 \\ Address line 2}
 \def \INV@text@company@eng {Company}
+\def \INV@text@correspondence@desc@eng {correspondence data}
+\def \INV@text@correspondence@name@eng {correspondence name}
+\def \INV@text@correspondence@addr@eng {correspondence address line 1\\ line 2}
 
 \def \INV@text@invoice@pl {Faktura}
 \def \INV@text@ourref@pl {Wystawca}
@@ -66,6 +69,9 @@
 \def \INV@text@noitems@pl {Dodaj pozycję}
 \def \INV@text@addr@pl {Linia pierwsza adresu \\ Linia druga adresu}
 \def \INV@text@company@pl {Kontrahent}
+\def \INV@text@correspondence@desc@pl {Dane do korespendecji}
+\def \INV@text@correspondence@name@pl {Nazwa do korespendecyjna}
+\def \INV@text@correspondence@addr@pl {Adres korespendencyjny linia pierwsza \\ Linia druga}
 
 % Import neccesary libraries
 \RequirePackage{advdate}
@@ -77,6 +83,7 @@
 \RequirePackage{colortbl}
 \RequirePackage{babel}
 \RequirePackage{polski}
+\RequirePackage{ifthen}
 
 % Define colors
 \definecolor{linecolor}{HTML}{b2b2b2}
@@ -114,6 +121,10 @@
 \def \INV@content@total {{\color{red} \csname INV@text@total@\INV@lang\endcsname}}
 \def \INV@content@accountnum {{\color{red} \csname INV@text@accountnum@\INV@lang\endcsname}}
 \def \INV@content@companyid {{\color{red} \csname INV@text@companyid@\INV@lang\endcsname}}
+\newboolean{correspondenceto}
+\setboolean{correspondenceto}{false}
+\def \INV@content@correspondenceto@name {{\color{red} \csname INV@text@correspondence@name@\INV@lang\endcsname}}
+\def \INV@content@correspondenceto@addr {{\color{red} \csname INV@text@correspondence@addr@\INV@lang\endcsname}}
 
 % Functions for overriding standard values
 \newcommand{\setinvoicetitle}[1]{\def \INV@content@title {#1}}
@@ -152,6 +163,11 @@
 \end{tabular}
 \vspace{1cm}
 }
+\newcommand{\setreceivercorrespondenceenable}{
+    \setboolean{correspondenceto}{true}
+}
+\newcommand{\setreceivercorrespondencename}[1]{\def \INV@content@correspondenceto@name {#1}}
+\newcommand{\setreceivercorrespondenceaddr}[1]{\def \INV@content@correspondenceto@addr {#1}}
 
 % Make invoice function
 \def \makeinvoice {
@@ -160,6 +176,12 @@
 		\INV@content@toaddr
 		\ifdef{\INV@content@tocompanyid}{\\ \csname INV@text@companyid@\INV@lang\endcsname: \INV@content@tocompanyid}{}
 		\ifdef{\INV@content@toregon}{\\ \csname INV@text@regon@\INV@lang\endcsname: \INV@content@toregon}{}
+        \ifthenelse{\boolean{correspondenceto}}{
+                \\
+                \\ \textbf{\csname INV@text@correspondence@desc@\INV@lang\endcsname:}
+                \\ \INV@content@correspondenceto@name
+                \\ \INV@content@correspondenceto@addr
+        }{}
 	\end{minipage}
 	\begin{minipage}[b]{0.5\textwidth}
 		\hfill {\Huge \INV@content@title}

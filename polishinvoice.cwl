@@ -2,6 +2,9 @@
 \setinvoicenumber{number}
 \setrevievername{reciever's name}
 \setrevieveraddress{reciever's address}
+\setreceivercorrespondenceenable{use differnet correspondence address then registred company address}
+\setreceivercorrespondencename{reciever's correspondence name}
+\setreceivercorrespondenceaddr{reciever's correspondence address}
 \setname{your name}
 \setaddress{your address (multiline)}{your address (single line)}
 \setphonenumber{your phone number}
