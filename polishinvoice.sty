@@ -29,6 +29,7 @@
 \def \INV@text@itemprice@eng {Item price}
 \def \INV@text@vat@eng {VAT}
 \def \INV@text@itemtotal@eng {Sum}
+\def \INV@text@subitem@eng {Subtotal}
 \def \INV@text@subtotal@eng {Subtotal}
 \def \INV@text@total@eng {Total}
 \def \INV@text@paymentinfo@eng {Payment info}
@@ -42,6 +43,7 @@
 \def \INV@text@noitems@eng {No items yet}
 \def \INV@text@addr@eng {Address line 1 \\ Address line 2}
 \def \INV@text@company@eng {Company}
+\def \INV@text@quantity@eng {Quantity}
 \def \INV@text@correspondence@desc@eng {correspondence data}
 \def \INV@text@correspondence@name@eng {correspondence name}
 \def \INV@text@correspondence@addr@eng {correspondence address line 1\\ line 2}
@@ -55,7 +57,8 @@
 \def \INV@text@description@pl {Opis}
 \def \INV@text@itemprice@pl {Cena usługi}
 \def \INV@text@vat@pl {VAT}
-\def \INV@text@itemtotal@pl {Suma}
+\def \INV@text@subitem@pl {Suma netto}
+\def \INV@text@itemtotal@pl {Suma brutto}
 \def \INV@text@subtotal@pl {Kwota netto}
 \def \INV@text@total@pl {Kwota brutto}
 \def \INV@text@paymentinfo@pl {Informacje płatności}
@@ -69,6 +72,7 @@
 \def \INV@text@noitems@pl {Dodaj pozycję}
 \def \INV@text@addr@pl {Linia pierwsza adresu \\ Linia druga adresu}
 \def \INV@text@company@pl {Kontrahent}
+\def \INV@text@quantity@pl {Ilość}
 \def \INV@text@correspondence@desc@pl {Dane do korespendecji}
 \def \INV@text@correspondence@name@pl {Nazwa do korespendecyjna}
 \def \INV@text@correspondence@addr@pl {Adres korespendencyjny linia pierwsza \\ Linia druga}
@@ -126,6 +130,10 @@
 \def \INV@content@correspondenceto@name {{\color{red} \csname INV@text@correspondence@name@\INV@lang\endcsname}}
 \def \INV@content@correspondenceto@addr {{\color{red} \csname INV@text@correspondence@addr@\INV@lang\endcsname}}
 
+%counters
+\newcounter{detailed_invoice}
+\setcounter{detailed_invoice}{0}
+
 % Functions for overriding standard values
 \newcommand{\setinvoicetitle}[1]{\def \INV@content@title {#1}}
 \newcommand{\setinvoicenumber}[1]{\def \INV@content@num {#1}}
@@ -141,6 +149,7 @@
 \newcommand{\setdeadline}[1]{\def \INV@content@deadline {\DayAfter[#1]}}
 \newcommand{\forcedeadline}[1]{\def \INV@content@deadline {#1}}
 \newcommand{\additem}[4]{\ifdef{\INV@content@list}{\appto \INV@content@list {\\ #1 & #2 & #3 \% & #4}}{\def \INV@content@list {#1 & #2 & #3 \% & #4}}}
+\newcommand{\additemdetailed}[6]{\ifdef{\INV@content@list}{\appto \INV@content@list {\\ #1 & #2 & #3 & #4 & #5 \% & #6}}{\def \INV@content@list {#1 & #2 & #3 & #4 & #5 \% & #6}}}
 \newcommand{\setsubtotal}[1]{\def \INV@content@subtotal {#1}}
 \newcommand{\setvat}[1]{\def \INV@content@vat {#1}}
 \newcommand{\settotal}[1]{\def \INV@content@total {#1}}
@@ -168,6 +177,34 @@
 }
 \newcommand{\setreceivercorrespondencename}[1]{\def \INV@content@correspondenceto@name {#1}}
 \newcommand{\setreceivercorrespondenceaddr}[1]{\def \INV@content@correspondenceto@addr {#1}}
+
+\newcommand{\setdetailedinvoice}[1]{\setcounter{detailed_invoice}{#1}}
+\newcommand{\itemlist}{
+%%	\renewcommand{\arraystretch}{2}
+    {
+        \centering
+        \ifnum \value{detailed_invoice} > 0 {
+            \begin{tabularx}{\textwidth \setlength\tabcolsep{2pt} }{{l}*{5}{|r}|}
+            \textbf{\csname INV@text@description@\INV@lang\endcsname} &
+            \textbf{\csname INV@text@quantity@\INV@lang\endcsname} &
+            \textbf{\csname INV@text@itemprice@\INV@lang\endcsname} &
+            \textbf{\csname INV@text@subitem@\INV@lang\endcsname} &
+            \textbf{\csname INV@text@vat@\INV@lang\endcsname} &
+            \textbf{\csname INV@text@itemtotal@\INV@lang\endcsname} \\ \arrayrulecolor{linecolor}\hline
+            \ifdef{\INV@content@list}{\INV@content@list}{{\color{red} \csname INV@text@noitems@\INV@lang\endcsname} & & & & & &}
+            \end{tabularx}
+        } \else {
+            \begin{tabularx}{\textwidth \setlength\tabcolsep{2pt}}{X c c r}
+		    \textbf{\csname INV@text@description@\INV@lang\endcsname} &
+            \textbf{\csname INV@text@itemprice@\INV@lang\endcsname} &
+            \textbf{\csname INV@text@vat@\INV@lang\endcsname} &
+            \textbf{\csname INV@text@itemtotal@\INV@lang\endcsname} \\ \arrayrulecolor{linecolor}\hline
+		    \ifdef{\INV@content@list}{\INV@content@list}{{\color{red} \csname INV@text@noitems@\INV@lang\endcsname} & & &}
+            \end{tabularx}
+        }
+        \fi
+    }
+}
 
 % Make invoice function
 \def \makeinvoice {
@@ -208,12 +245,8 @@
 	
 	\vspace{3cm}
 	
-	\renewcommand{\arraystretch}{1.5}
-	\begin{tabularx}{\textwidth}{X c c r}
-		\textbf{\csname INV@text@description@\INV@lang\endcsname} & \textbf{\csname INV@text@itemprice@\INV@lang\endcsname} & \hspace{10pt}\textbf{\csname INV@text@vat@\INV@lang\endcsname}\hspace{10pt} & \textbf{\csname INV@text@itemtotal@\INV@lang\endcsname} \\ \arrayrulecolor{linecolor}\hline
-		\ifdef{\INV@content@list}{\INV@content@list}{{\color{red} \csname INV@text@noitems@\INV@lang\endcsname} & & &}
-	\end{tabularx}
-	
+    \itemlist{}
+
 	\vspace{2cm}
 	\hfill
 	\renewcommand{\arraystretch}{1}
