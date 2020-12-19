@@ -22,8 +22,16 @@
 \setaccountnumber{number}
 \setcompanyid{NIP}
 \setreceivercompanyid{Client NIP}
+\setdetailedinvoice{Default false, detailed true}
+\setwithqrcodes
+\setqrcodebankpayment
+\setqrcodebitcoinpayment
 \overridedateofissue{Client Regon}
 \overridedateofissue{Date of issue}
 \makeinvoice
-\itemlist
-\setdetailedinvoice{Default 0, detailed 1}
+\drawbuyer
+\drawrefere
+\drawitemlist
+\drawqrcodetable
+\drawqrcodebankpayment
+\drawdoubleSignature

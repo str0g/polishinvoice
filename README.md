@@ -9,4 +9,7 @@ In case of using other distribution fallow steps from PKGBUILD or copy polishinv
 
 This project was based on [simpleinvoice](https://github.com/mathialo/simpleinvoice)
 
+# Issues
+* qrcode does not work - ```\graphicspath``` needs to be set for folder with images fallow examples for more info.
+
 LateX-owy szablon do tworzenia faktur.

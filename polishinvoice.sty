@@ -44,6 +44,10 @@
 \def \INV@text@addr@eng {Address line 1 \\ Address line 2}
 \def \INV@text@company@eng {Company}
 \def \INV@text@quantity@eng {Quantity}
+\def \INV@text@scanandpay@eng {Scan and pay}
+\def \INV@text@bank@eng {Bank}
+\def \INV@text@rate@eng {Rate}
+\def \INV@text@cryptocurrency@eng {Crypto currency}
 \def \INV@text@correspondence@desc@eng {correspondence data}
 \def \INV@text@correspondence@name@eng {correspondence name}
 \def \INV@text@correspondence@addr@eng {correspondence address line 1\\ line 2}
@@ -73,6 +77,10 @@
 \def \INV@text@addr@pl {Linia pierwsza adresu \\ Linia druga adresu}
 \def \INV@text@company@pl {Kontrahent}
 \def \INV@text@quantity@pl {Ilość}
+\def \INV@text@scanandpay@pl {Skanuj i zapłać}
+\def \INV@text@bank@pl {Bank}
+\def \INV@text@rate@pl {Kurs}
+\def \INV@text@cryptocurrency@pl {Kryptowaluta}
 \def \INV@text@correspondence@desc@pl {Dane do korespendecji}
 \def \INV@text@correspondence@name@pl {Nazwa do korespendecyjna}
 \def \INV@text@correspondence@addr@pl {Adres korespendencyjny linia pierwsza \\ Linia druga}
@@ -88,6 +96,13 @@
 \RequirePackage{babel}
 \RequirePackage{polski}
 \RequirePackage{ifthen}
+% Links
+\RequirePackage{hyperref}
+\RequirePackage{url}
+% Table
+\RequirePackage{tabularx}
+% Commands
+\RequirePackage{etoolbox}
 
 % Define colors
 \definecolor{linecolor}{HTML}{b2b2b2}
@@ -96,16 +111,6 @@
 \setlength{\tabcolsep}{0em}
 \setlength{\parskip}{0pt}
 \setlength{\parindent}{0pt}
-
-% Links
-\RequirePackage{hyperref}
-\RequirePackage{url}
-
-% Table
-\RequirePackage{tabularx}
-
-% Commands
-\RequirePackage{etoolbox}
 
 % Line seperator
 \newcommand{\linesep}{\vspace{6pt} {\color{linecolor}\hrule} \vspace{6pt}}
@@ -125,14 +130,16 @@
 \def \INV@content@total {{\color{red} \csname INV@text@total@\INV@lang\endcsname}}
 \def \INV@content@accountnum {{\color{red} \csname INV@text@accountnum@\INV@lang\endcsname}}
 \def \INV@content@companyid {{\color{red} \csname INV@text@companyid@\INV@lang\endcsname}}
-\newboolean{correspondenceto}
-\setboolean{correspondenceto}{false}
 \def \INV@content@correspondenceto@name {{\color{red} \csname INV@text@correspondence@name@\INV@lang\endcsname}}
 \def \INV@content@correspondenceto@addr {{\color{red} \csname INV@text@correspondence@addr@\INV@lang\endcsname}}
 
-%counters
-\newcounter{detailed_invoice}
-\setcounter{detailed_invoice}{0}
+%boolean
+\newboolean{correspondenceto}
+\setboolean{correspondenceto}{false}
+\newboolean{withqrcodes}
+\setboolean{withqrcodes}{false}
+\newboolean{detailed_invoice}
+\setboolean{detailed_invoice}{false}
 
 % Functions for overriding standard values
 \newcommand{\setinvoicetitle}[1]{\def \INV@content@title {#1}}
@@ -158,57 +165,88 @@
 \newcommand{\setreceiverregon}[1]{\def \INV@content@toregon {#1}}
 \newcommand{\setreceivercompanyid}[1]{\def \INV@content@tocompanyid {#1}}
 \newcommand{\overridedateofissue}[1]{\def \INV@content@dateofissue {#1}}
-\newcommand{\doubleSignature}{
-\vspace{2cm}
-
-\begin{center}
-	\csname INV@text@date@\INV@lang\endcsname: \INV@content@dateofissue
-\end{center}
-
-\noindent
-\begin{tabular}{lcl}
-	\rule{5cm}{1pt} & \hspace{2cm} & \rule{5cm}{1pt}\\
-	\ifdef{\INV@content@ourref}{\INV@content@ourref}{} & & \csname INV@text@signature@\INV@lang\endcsname \ifdef{\INV@content@yourref}{\INV@content@yourref}{}
-\end{tabular}
-\vspace{1cm}
-}
-\newcommand{\setreceivercorrespondenceenable}{
-    \setboolean{correspondenceto}{true}
-}
+\newcommand{\setreceivercorrespondenceenable}{\setboolean{correspondenceto}{true}}
+\newcommand{\setdetailedinvoice}[1]{\setboolean{detailed_invoice}{#1}}
 \newcommand{\setreceivercorrespondencename}[1]{\def \INV@content@correspondenceto@name {#1}}
 \newcommand{\setreceivercorrespondenceaddr}[1]{\def \INV@content@correspondenceto@addr {#1}}
 
-\newcommand{\setdetailedinvoice}[1]{\setcounter{detailed_invoice}{#1}}
-\newcommand{\itemlist}{
+%%qrcode related methods
+\newcommand{\setwithqrcodes}{\setboolean{withqrcodes}{true}}
+\newcommand{\setqrcodebankpayment}[1]{\def \qrcodebankpayment {#1}}
+\newcommand{\setqrcodebitcoinpayment}[2]{
+	\def \qrcodebitcoinpayment {#1}
+	\def \cryptocurrencyrate {#2}
+}
+
+\newcommand{\drawqrcodeframe}[2]{
+	\IfFileExists{#1}{
+		\begin{minipage}[t]{0.2\textwidth}
+			\begin{center}
+				\textbf{\csname INV@text@scanandpay@\INV@lang\endcsname}
+				\includegraphics[width=2cm, height=2cm]{#1}\\
+				#2
+			\end{center}
+		\end{minipage}
+	}{}
+}
+
+\newcommand{\drawqrcodeframecurrency}[2]{
+	\IfFileExists{#1}{
+		\begin{minipage}[t]{0.2\textwidth}
+			\begin{center}
+				\textbf{\csname INV@text@scanandpay@\INV@lang\endcsname}
+				\includegraphics[width=2cm, height=2cm]{#1}\\
+				#2\\
+				\csname INV@text@rate@\INV@lang\endcsname: \cryptocurrencyrate
+			\end{center}
+		\end{minipage}
+	}{}
+}
+
+\newcommand{\drawqrcodetable}{
+	\ifthenelse{\boolean{withqrcodes}}{
+		\ifdefined\qrcodebankpayment{
+			\drawqrcodeframe{\qrcodebankpayment}{\csname INV@text@bank@\INV@lang\endcsname}
+		}
+		\fi
+		\ifdefined\qrcodebitcoinpayment{
+			\drawqrcodeframecurrency{\qrcodebitcoinpayment}{\csname INV@text@cryptocurrency@\INV@lang\endcsname}
+		}
+		\fi
+	}
+}
+
+\newcommand{\drawitemlist}{
 %%	\renewcommand{\arraystretch}{2}
     {
         \centering
-        \ifnum \value{detailed_invoice} > 0 {
+		\ifthenelse{\boolean{detailed_invoice}} {
             \begin{tabularx}{\textwidth \setlength\tabcolsep{2pt} }{{l}*{5}{|r}|}
             \textbf{\csname INV@text@description@\INV@lang\endcsname} &
             \textbf{\csname INV@text@quantity@\INV@lang\endcsname} &
             \textbf{\csname INV@text@itemprice@\INV@lang\endcsname} &
             \textbf{\csname INV@text@subitem@\INV@lang\endcsname} &
             \textbf{\csname INV@text@vat@\INV@lang\endcsname} &
-            \textbf{\csname INV@text@itemtotal@\INV@lang\endcsname} \\ \arrayrulecolor{linecolor}\hline
+            \textbf{\csname INV@text@itemtotal@\INV@lang\endcsname} \\
+			\arrayrulecolor{linecolor}\hline
             \ifdef{\INV@content@list}{\INV@content@list}{{\color{red} \csname INV@text@noitems@\INV@lang\endcsname} & & & & & &}
             \end{tabularx}
-        } \else {
+        }
+		{
             \begin{tabularx}{\textwidth \setlength\tabcolsep{2pt}}{X c c r}
 		    \textbf{\csname INV@text@description@\INV@lang\endcsname} &
             \textbf{\csname INV@text@itemprice@\INV@lang\endcsname} &
             \textbf{\csname INV@text@vat@\INV@lang\endcsname} &
-            \textbf{\csname INV@text@itemtotal@\INV@lang\endcsname} \\ \arrayrulecolor{linecolor}\hline
+            \textbf{\csname INV@text@itemtotal@\INV@lang\endcsname} \\
+			\arrayrulecolor{linecolor}\hline
 		    \ifdef{\INV@content@list}{\INV@content@list}{{\color{red} \csname INV@text@noitems@\INV@lang\endcsname} & & &}
             \end{tabularx}
         }
-        \fi
     }
 }
 
-% Make invoice function
-\def \makeinvoice {
-	\begin{minipage}[b]{0.5\textwidth}
+\newcommand{\drawbuyer}{
+	\begin{minipage}[t][4cm][c]{0.5\textwidth}
 		{\large \textbf{\INV@content@toname}} \\
 		\INV@content@toaddr
 		\ifdef{\INV@content@tocompanyid}{\\ \csname INV@text@companyid@\INV@lang\endcsname: \INV@content@tocompanyid}{}
@@ -220,7 +258,10 @@
                 \\ \INV@content@correspondenceto@addr
         }{}
 	\end{minipage}
-	\begin{minipage}[b]{0.5\textwidth}
+}
+
+\newcommand{\drawrefere}{
+	\begin{minipage}[t]{0.5\textwidth}
 		\hfill {\Huge \INV@content@title}
 		
 		\linesep
@@ -233,19 +274,50 @@
 		\ifdef{\INV@content@email}{\\ \INV@content@email}{}
 		
 		\linesep
-		
+		\begin{minipage}[t]{0.35\textwidth}
 		{ \footnotesize
-			\ifdef{\INV@content@ourref}{\csname INV@text@ourref@\INV@lang\endcsname: \INV@content@ourref \\}{}
-			\ifdef{\INV@content@yourref}{\csname INV@text@yourref@\INV@lang\endcsname: \INV@content@yourref \\}{}
-			\csname INV@text@invnum@\INV@lang\endcsname: \INV@content@num \\
-			\csname INV@text@invdate@\INV@lang\endcsname: \INV@content@date \\
-			\csname INV@text@deadline@\INV@lang\endcsname: \INV@content@deadline
+			\ifdef{\INV@content@ourref}{\csname INV@text@ourref@\INV@lang\endcsname:\\}{}
+			\ifdef{\INV@content@yourref}{\csname INV@text@yourref@\INV@lang\endcsname:\\}{}
+			\csname INV@text@invnum@\INV@lang\endcsname:\\
+			\csname INV@text@invdate@\INV@lang\endcsname:\\
+			\csname INV@text@deadline@\INV@lang\endcsname:
 		}
+		\end{minipage}
+		\begin{minipage}[t]{0.65\textwidth}
+		{ \footnotesize
+			\ifdef{\INV@content@ourref}{\INV@content@ourref \\}{}
+			\ifdef{\INV@content@yourref}{\INV@content@yourref \\}{}
+			\INV@content@num \\
+			\INV@content@date \\
+			\INV@content@deadline
+		}
+		\end{minipage}
 	\end{minipage}
+}
+
+\newcommand{\drawdoubleSignature}{
+	\vspace{2cm}
+
+	\begin{center}
+		\csname INV@text@date@\INV@lang\endcsname: \INV@content@dateofissue
+	\end{center}
+
+	\noindent
+	\begin{tabular}{lcl}
+		\rule{5cm}{1pt} & \hspace{2cm} & \rule{5cm}{1pt}\\
+		\ifdef{\INV@content@ourref}{\INV@content@ourref}{} & & \csname INV@text@signature@\INV@lang\endcsname \ifdef{\INV@content@yourref}{\INV@content@yourref}{}
+	\end{tabular}
+	\vspace{1cm}
+}
+
+% Make invoice function
+\def \makeinvoice {
+	\drawbuyer
+	\drawrefere
 	
 	\vspace{3cm}
 	
-    \itemlist{}
+    \drawitemlist
 
 	\vspace{2cm}
 	\hfill
@@ -256,6 +328,9 @@
 		{\Large \csname INV@text@total@\INV@lang\endcsname: \hspace{10pt}} & {\Large \INV@content@total}
 	\end{tabular}
 	\vfill
-	\doubleSignature{}
+
+	\drawqrcodetable
+
+	\drawdoubleSignature
 }
 
